@@ -6,9 +6,8 @@ project. This is a work in progress and will be expanded upon in the future.
 ### Setup
 1. Clone this repository to wherever you work (locally or on a server).
 2. Create a new folder within the repository called `data`. Then, download the datasets from 
-[here](https://drive.google.com/drive/folders/1sjoiEn3m47XSDZbCyP4JJhPiKITdOsoV?usp=sharing) and store them in the `data`
-folder. Keeping this structure allows the code to run smoothly. Note that you'll need to request permission to access the 
-data.
+[here](https://drive.google.com/drive/folders/1qN2bp1_1bvH5KLOkoBrEEalDmAhIS-Xv?usp=sharing) and store them in the `data`
+folder. Keeping this structure allows the code to run smoothly.
 
 3. Install the Python dependencies in
 [requirements.txt](https://github.com/abbystvns/gtv_forecasting/blob/master/requirements.txt). You can install them by

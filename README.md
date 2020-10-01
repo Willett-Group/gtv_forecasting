@@ -1,8 +1,5 @@
 # GTV for Seasonal Forecasting
 
-As of 8/4/2020, this repository contains a stripped-down version of the codebase for the GTV for seasonal forecasting 
-project. This is a work in progress and will be expanded upon in the future. 
-
 ### Setup
 1. Clone this repository to wherever you work (locally or on a server).
 2. Create a new folder within the repository called `data`. Then, download the datasets from 

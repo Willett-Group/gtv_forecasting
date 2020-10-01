@@ -20,12 +20,12 @@ def loss_fn(X, Y, beta, alpha=1):
     :param alpha: float between 0 and 1 defining the discount factor in the loss function
     :return: value of the loss function for given inputs
     """
+    n = X.shape[0]
     if alpha<1:
-        n = X.shape[0]
         weights = np.array([alpha**(n-t) for t in np.arange(1, n+1)])
         X = X * np.sqrt(weights.reshape(-1,1))
         Y = Y * np.sqrt(weights)
-    return 1/2*cp.norm2(cp.matmul(X, beta) - Y)**2
+    return 1/n*cp.norm2(cp.matmul(X, beta) - Y)**2
 
 def regularizer(beta):
     """

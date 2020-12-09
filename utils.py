@@ -3,8 +3,11 @@ import matplotlib as mpl
 import seaborn as sns
 import cartopy.crs as ccrs
 import numpy as np
+import pandas as pd
 from matplotlib.patches import Rectangle
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+from sklearn import linear_model
+from sklearn.metrics import r2_score, mean_squared_error
 
 
 def edge_incidence(S, threshold=0):
@@ -162,4 +165,72 @@ def plot_regional_metrics(df, metric='mse', order=None, pal=['navy', 'orange', '
                     mode="expand", borderaxespad=0, ncol=4)
     plt.xlabel('Region', fontweight='bold')
 
+def compute_errors(y_true, y_predicted):
+    r2 = r2_score(y_true, y_predicted)
+    mse = mean_squared_error(y_predicted, y_true)
+    return(mse, r2)
+
+def temporal_split(X, y, t):
+    X_train = X[:t]
+    X_test = X[t:]
+    y_train = y[:t]
+    y_test = y[t:]
+    return X_train, X_test, y_train, y_test
+
+
+def teleconnections(X, y, fts, alpha, t=50):
+    tele_errors = []
+    lm = linear_model.LinearRegression()
+
+    Xnzi = X[:, fts[fts.nzi>0].index].mean(axis=1).reshape(-1,1)
+    Xenso = X[:, fts[fts.enso==3.4].index].mean(axis=1).reshape(-1,1)
+    Xtele = np.hstack([Xnzi, Xenso])
+
+    if alpha == 1:
+        X_train, X_test, y_train, y_test = temporal_split(Xnzi, y, t)
+        lm.fit(X_train, y_train)
+        tele_errors.append(['NZI',
+                            compute_errors(y_test, X_test@lm.coef_)[0],
+                            compute_errors(y_test, X_test@lm.coef_)[1],
+                           lm.coef_])
+
+        X_train, X_test, y_train, y_test = temporal_split(Xenso, y, t)
+        lm.fit(X_train, y_train)
+        tele_errors.append(['Nino 3.4',
+                            compute_errors(y_test, X_test@lm.coef_)[0],
+                            compute_errors(y_test, X_test@lm.coef_)[1],
+                           lm.coef_])
+
+        X_train, X_test, y_train, y_test = temporal_split(Xtele, y, t)
+        lm.fit(X_train, y_train)
+        tele_errors.append(['Nino 3.4 & NZI',
+                            compute_errors(y_test, X_test@lm.coef_)[0],
+                            compute_errors(y_test, X_test@lm.coef_)[1],
+                           lm.coef_])
+    else:
+        n = t
+        weights = np.array([alpha**(n-t) for t in np.arange(1, n+1)])
+        X_train, X_test, y_train, y_test = temporal_split(Xnzi, y, t)
+        lm.fit(X_train, y_train, sample_weight=weights)
+        tele_errors.append(['NZI',
+                            compute_errors(y_test, X_test@lm.coef_)[0],
+                            compute_errors(y_test, X_test@lm.coef_)[1],
+                           lm.coef_])
+
+        X_train, X_test, y_train, y_test = temporal_split(Xenso, y, t)
+        lm.fit(X_train, y_train, sample_weight=weights)
+        tele_errors.append(['Nino 3.4',
+                            compute_errors(y_test, X_test@lm.coef_)[0],
+                            compute_errors(y_test, X_test@lm.coef_)[1],
+                           lm.coef_])
+
+        X_train, X_test, y_train, y_test = temporal_split(Xtele, y, t)
+        lm.fit(X_train, y_train, sample_weight=weights)
+        tele_errors.append(['Nino 3.4 & NZI',
+                            compute_errors(y_test, X_test@lm.coef_)[0],
+                            compute_errors(y_test, X_test@lm.coef_)[1],
+                           lm.coef_])
+    df_tele = pd.DataFrame(tele_errors, columns=['Method', 'MSE', 'R2', 'Coefs'])
+    df_tele['alpha'] = alpha
+    return df_tele
 

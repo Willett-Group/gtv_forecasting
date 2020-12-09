@@ -84,48 +84,6 @@ def gtv_cvx(X, y, D, lambda_lasso, lambda_tv, alpha=1):
     # return coefficients
     return beta.value
 
-
-def gtv_cv(X, y, D, lambda_lasso_path, lambda_tv_path):
-    """
-    Function to choose optimal regularization parameters in a 5-fold cross validation setting
-    :param X: n x p matrix of predictors
-    :param y: n-dim response vector
-    :param D: |E| x p edge-incdience matrix (same as edge_incidence in other functions)
-    :param lambda_lasso_path: list of lasso regularization values to iterate over
-    :param lambda_tv_path: list of GTV regularization values to iterate over
-    :return: tuple of optimal (lambda_lasso, lambda_tv)
-    """
-    cv = KFold(n_splits=5, shuffle=True)
-    for train, test in cv.split(X):
-        Xtr = X[train]
-        Xtst = X[test]
-        ytr = y[train]
-        ytst = y[test]
-        p = X.shape[1]
-        beta = cp.Variable(p)
-        lam1 = cp.Parameter(nonneg=True)
-        lam2 = cp.Parameter(nonneg=True)
-        # setup the problem
-        problem = cp.Problem(cp.Minimize(objective_fn(Xtr, ytr, beta, D, lam1, lam2)))
-        errors = []
-        for l1 in lambda_lasso_path:
-            for ltv in lambda_tv_path:
-                # set regularization parameters
-                lam1.value = l1
-                lam2.value = ltv
-                # solve the objective
-                try:
-                    problem.solve()
-                    # build prediction
-                    yhat = Xtst @ beta.value
-                    errors.append([l1, ltv, r2_score(ytst, yhat), mean_squared_error(ytst, yhat)])
-                except:
-                    continue
-    errors = pd.DataFrame(errors, columns=['lambda_1', 'lambda_tv', 'r2', 'mse'])
-    (l1, ltv) = errors.groupby(['lambda_1', 'lambda_tv'])[['r2', 'mse']
-        ].mean().reset_index().sort_values('mse').iloc[0][['lambda_1', 'lambda_tv']].values
-    return l1, ltv
-
 def gtv_cvx_path(X, y, D, lambda_lasso_path, lambda_tv_path,
                  return_df = True, region=None, alpha=1, t=50):
     """

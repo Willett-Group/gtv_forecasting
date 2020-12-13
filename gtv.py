@@ -144,3 +144,42 @@ def gtv_cvx_path(X, y, D, lambda_lasso_path, lambda_tv_path,
             return pd.DataFrame(errors, columns=['lambda_1', 'lambda_tv', 'r2', 'mse'])
     else:
         return errors
+
+
+def gtv_cv(X, y, D, alpha, lambda_lasso_path, lambda_tv_path):
+    # weight data
+    n = X.shape[0]
+    weights = np.array([alpha ** (n - t) for t in np.arange(1, n + 1)])
+    X = X * np.sqrt(weights.reshape(-1, 1))
+    y = y * np.sqrt(weights)
+    np.random.seed(8) # random seed for reproducibility
+    cv = KFold(n_splits=5, shuffle=True)
+    for train, test in cv.split(X):
+        Xtr = X[train]
+        Xtst = X[test]
+        ytr = y[train]
+        ytst = y[test]
+        p = X.shape[1]
+        beta = cp.Variable(p)
+        lam1 = cp.Parameter(nonneg=True)
+        lam2 = cp.Parameter(nonneg=True)
+        # setup the problem
+        problem = cp.Problem(cp.Minimize(objective_fn(Xtr, ytr, beta, D, lam1, lam2)))
+        errors = []
+        for l1 in lambda_lasso_path:
+            for ltv in lambda_tv_path:
+                # set regularization parameters
+                lam1.value = l1
+                lam2.value = ltv
+                # solve the objective
+                try:
+                    problem.solve()
+                    # build prediction
+                    yhat = Xtst @ beta.value
+                    errors.append([l1, ltv, r2_score(ytst, yhat), mean_squared_error(ytst, yhat)])
+                except:
+                    continue
+    errors = pd.DataFrame(errors, columns=['lambda_1', 'lambda_tv', 'r2', 'mse'])
+    (l1, ltv) = errors.groupby(['lambda_1', 'lambda_tv'])[['r2', 'mse']
+        ].mean().reset_index().sort_values('mse').iloc[0][['lambda_1', 'lambda_tv']].values
+    return l1, ltv

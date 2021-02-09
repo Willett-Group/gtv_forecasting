@@ -106,12 +106,27 @@ def draw_lambda_contour(df, metric, vmin=None, vmax=None):
     #plt.xticks(np.linspace(0, d.shape[0], min(d.shape[0], 10)), rotation='vertical')
     #plt.yticks(np.linspace(0, d.shape[0], min(d.shape[0], 10)), rotation='horizontal')
 
-def plot_covariance(covs, titles, h = 4, ori='vertical', bar=True):
+
+def threshold_covariance(S, threshold):
+    p = S.shape[1]
+    if threshold ==0:
+        return S
+    edges = np.where(abs(S) > threshold)
+    edges_ix = np.where(edges[0] < edges[1])
+    ix1 = edges[0][edges_ix]
+    ix2 = edges[1][edges_ix]
+    St = np.zeros((p, p))
+    St[list(ix1), list(ix2)] = S[list(ix1), list(ix2)]
+    St[list(ix2), list(ix1)] = S[list(ix2), list(ix1)]
+    return St
+
+
+def plot_covariance(covs, titles, threshold=0, h=4):
     n = len(covs)
-    if bar:
-        fig = plt.figure(figsize=(n*h+h/2, h))
+    if n == 1:
+        fig = plt.figure(figsize=(h + 1, h))
     else:
-        fig = plt.figure(figsize=(n*h, h))
+        fig = plt.figure(figsize=(n*h+h/2, h))
     axes=[]
     plots = []
     subplot_ix = 100 + n*10
@@ -119,12 +134,12 @@ def plot_covariance(covs, titles, h = 4, ori='vertical', bar=True):
         ax = fig.add_subplot(subplot_ix+i+1)
         axes.append(ax)
     for i, S in enumerate(covs):
-        g = sns.heatmap(S, ax=axes[i], vmin=-1, vmax=1, cmap='coolwarm', xticklabels=False, yticklabels=False, cbar=False)
+        St = threshold_covariance(S, threshold)
+        g = sns.heatmap(St, ax=axes[i], vmin=-1, vmax=1, cmap='coolwarm', xticklabels=False, yticklabels=False, cbar=False)
         plots.append(g)
         plots[i].set_title(titles[i])
     mappable = plots[0].get_children()[0]
-    if bar:
-        plt.colorbar(mappable, ax = axes, orientation = ori)
+    plt.colorbar(mappable, ax = axes, orientation = 'vertical')
 
 
 def shorten_region(region):
@@ -233,4 +248,3 @@ def teleconnections(X, y, fts, alpha, t=50):
     df_tele = pd.DataFrame(tele_errors, columns=['Method', 'MSE', 'R2', 'Coefs'])
     df_tele['alpha'] = alpha
     return df_tele
-

@@ -90,7 +90,7 @@ def detrend_and_scale(df, min_year, max_year):
 
 
 def monthly_X(df, months=['july', 'aug', 'sept', 'oct'], step=1, agg=False,
-              min_year=1940, max_year=2014, scale=True):
+              min_year=1940, max_year=2019, scale=True):
     """
     @param df:
     @param months:

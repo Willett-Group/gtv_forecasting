@@ -106,6 +106,29 @@ def draw_lambda_contour(df, metric, vmin=None, vmax=None):
     #plt.xticks(np.linspace(0, d.shape[0], min(d.shape[0], 10)), rotation='vertical')
     #plt.yticks(np.linspace(0, d.shape[0], min(d.shape[0], 10)), rotation='horizontal')
 
+def draw_lambda_contour_paper_format(df, metric, vmin=None, vmax=None):
+    sns.set(font_scale=2)
+    plt.figure(figsize=(10,8))
+    d = df.pivot(index='lambda_1', columns='lambda_tv', values=metric)
+    if vmin is None:
+        vmin = df[metric].min()
+        vmax = df[metric].max()
+    d = d.interpolate(method='linear', axis=1, limit_direction='both')
+    d = d.sort_index(ascending=False)
+    d.columns = [np.round(x,2) for x in d.columns]
+    ax = sns.heatmap(d, vmin=vmin, vmax=vmax, cmap='coolwarm')
+    labels1 = ax.get_xticklabels() # get x labels
+    for i,l in enumerate(labels1):
+        if(i%2 == 0): labels1[i] = '' # skip even labels
+    ax.set_xticklabels(labels1, rotation=0)
+    labels2 = ax.get_yticklabels()# get x labels
+    for i,l in enumerate(labels2):
+        if(i%2 == 0): labels2[i] = '' # skip even labels
+    ax.set_yticklabels(labels2, rotation=0)
+    ax.tick_params(left=True, bottom=True)
+    plt.xlabel('$\lambda_{TV}$ x $10^{-3}$')
+    plt.ylabel('$\lambda_1$ x $10^{-1}$')
+
 
 def threshold_covariance(S, threshold):
     p = S.shape[1]

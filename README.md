@@ -2,25 +2,20 @@
 
 ### Setup
 1. Clone this repository to wherever you work (locally or on a server).
-2. Create a new folder within the repository called `data`. Then, download the datasets from 
-[here](https://drive.google.com/drive/folders/1qN2bp1_1bvH5KLOkoBrEEalDmAhIS-Xv?usp=sharing) and store them in the `data`
-folder. Keeping this structure allows the code to run smoothly.
 
-3. Install the Python dependencies in
+2. Install the Python dependencies in
 [requirements.txt](https://github.com/abbystvns/gtv_forecasting/blob/master/requirements.txt). You can install them by
 running `pip install requirements.txt` in your terminal. To avoid conflicts with existing Python environments, I suggest
 doing this in a fresh virtual environment (see [here](https://docs.python-guide.org/dev/virtualenvs/) for details).
 
-4. The worked example in this repository is in a [Jupyter Notebooks](https://jupyter.org/). After you've installed the appropriate 
+3. The worked example in this repository is in a [Jupyter Notebooks](https://jupyter.org/). After you've installed the appropriate 
 dependencies, navigate to the repository and type `jupyter notebook`. A window should open in your browser that allows 
 you to interact with the notebooks.
 
-Within the Google Drive storing the data there are two folder: SSF and TRIPODS. These refer to two different climate-related
-grants and provide different types of data.
 
 #### Datasets
-The dataset we used to predict winter precipitation over the Southwest United States (SWUS) using summer SSTs over the Pacific basin. 
-The processed data in this folder consists of:
+
+The processed data can be found in the `paper/data` folder and consists of:
 
 1. `X_obs.csv`: Monthly summer (July, Aug, Sept, Oct) SST observations from 1940-2019 at a 10 degree by 10 degree spatial scale.
 More info/downloads [here](https://psl.noaa.gov/data/gridded/data.cobe2.html).
